@@ -26,7 +26,7 @@ jobs:
         run: pip install yfinance pandas
 
       - name: Fetch market data & compute signals
-        run: python scripts/fetch_signals.py
+        run: python fetch_signals.py
 
       - name: Commit signals.json
         run: |
