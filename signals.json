@@ -1,0 +1,151 @@
+{
+  "updated_at": "2026-03-20T23:07:47Z",
+  "score": 3,
+  "action": "减仓 50%",
+  "base_position": 80,
+  "suggested_position": 40,
+  "signals": {
+    "zijin_weakness": true,
+    "gdx_weakness": true,
+    "copper_breakdown": false,
+    "divergence": false,
+    "risk_spike": true
+  },
+  "raw": {
+    "zijin": 31.65,
+    "gold": 4492.0,
+    "gdx": 80.12,
+    "copper": 5.302,
+    "vix": 26.78,
+    "zijin_gold_ratio": 0.007046,
+    "gdx_gold_ratio": 0.017836,
+    "copper_gold_ratio": 0.00118,
+    "zijin_gold_ratio_ma20": 0.007295,
+    "gdx_gold_ratio_ma20": 0.019998,
+    "copper_gold_ratio_ma20": 0.001141,
+    "gold_ma20": 5067.09,
+    "gdx_ma20": 101.54
+  },
+  "history": [
+    {
+      "date": "2026-02-06",
+      "score": 4
+    },
+    {
+      "date": "2026-02-09",
+      "score": 3
+    },
+    {
+      "date": "2026-02-10",
+      "score": 3
+    },
+    {
+      "date": "2026-02-11",
+      "score": 2
+    },
+    {
+      "date": "2026-02-12",
+      "score": 3
+    },
+    {
+      "date": "2026-02-13",
+      "score": 2
+    },
+    {
+      "date": "2026-02-17",
+      "score": 3
+    },
+    {
+      "date": "2026-02-18",
+      "score": 2
+    },
+    {
+      "date": "2026-02-19",
+      "score": 2
+    },
+    {
+      "date": "2026-02-20",
+      "score": 2
+    },
+    {
+      "date": "2026-02-23",
+      "score": 2
+    },
+    {
+      "date": "2026-02-24",
+      "score": 2
+    },
+    {
+      "date": "2026-02-25",
+      "score": 2
+    },
+    {
+      "date": "2026-02-26",
+      "score": 2
+    },
+    {
+      "date": "2026-02-27",
+      "score": 2
+    },
+    {
+      "date": "2026-03-02",
+      "score": 1
+    },
+    {
+      "date": "2026-03-03",
+      "score": 3
+    },
+    {
+      "date": "2026-03-04",
+      "score": 3
+    },
+    {
+      "date": "2026-03-05",
+      "score": 3
+    },
+    {
+      "date": "2026-03-06",
+      "score": 5
+    },
+    {
+      "date": "2026-03-09",
+      "score": 5
+    },
+    {
+      "date": "2026-03-10",
+      "score": 4
+    },
+    {
+      "date": "2026-03-11",
+      "score": 4
+    },
+    {
+      "date": "2026-03-12",
+      "score": 5
+    },
+    {
+      "date": "2026-03-13",
+      "score": 4
+    },
+    {
+      "date": "2026-03-16",
+      "score": 2
+    },
+    {
+      "date": "2026-03-17",
+      "score": 2
+    },
+    {
+      "date": "2026-03-18",
+      "score": 4
+    },
+    {
+      "date": "2026-03-19",
+      "score": 2
+    },
+    {
+      "date": "2026-03-20",
+      "score": 3
+    }
+  ]
+}
