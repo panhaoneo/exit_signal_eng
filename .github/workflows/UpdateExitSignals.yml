@@ -1,0 +1,37 @@
+name: Update Exit Signals
+
+on:
+  schedule:
+    # 每天 UTC 22:00 跑（北京时间次日 06:00，美股收盘后）
+    - cron: "0 22 * * 1-5"
+  workflow_dispatch:   # 支持手动触发
+
+permissions:
+  contents: write
+
+jobs:
+  update-signals:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install yfinance pandas
+
+      - name: Fetch market data & compute signals
+        run: python scripts/fetch_signals.py
+
+      - name: Commit signals.json
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/signals.json
+          git diff --cached --quiet || git commit -m "chore: update signals $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push
