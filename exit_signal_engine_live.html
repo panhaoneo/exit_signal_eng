@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exit Signal Engine</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --mono: 'Courier New', Courier, monospace;
+    --color-bg:           #ffffff;
+    --color-bg-secondary: #f5f5f3;
+    --color-text:         #1a1a1a;
+    --color-text-muted:   #5f5e5a;
+    --color-text-hint:    #888780;
+    --color-border:       rgba(0,0,0,0.12);
+    --color-border-md:    rgba(0,0,0,0.22);
+    --color-border-strong:rgba(0,0,0,0.35);
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --red:    #E24B4A; --red-bg:    #FCEBEB; --red-text:    #A32D2D;
+    --amber:  #BA7517; --amber-bg:  #FAEEDA; --amber-text:  #854F0B;
+    --green:  #639922; --green-bg:  #EAF3DE; --green-text:  #3B6D11;
+    --gray:   #888780;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-bg:           #1e1e1c;
+      --color-bg-secondary: #2a2a28;
+      --color-text:         #f0efe8;
+      --color-text-muted:   #a8a7a0;
+      --color-text-hint:    #6a6965;
+      --color-border:       rgba(255,255,255,0.10);
+      --color-border-md:    rgba(255,255,255,0.18);
+      --color-border-strong:rgba(255,255,255,0.28);
+      --red-bg:    #501313; --red-text:    #F09595;
+      --amber-bg:  #412402; --amber-text:  #FAC775;
+      --green-bg:  #173404; --green-text:  #97C459;
+    }
+  }
+  body {
+    font-family: var(--mono);
+    background: var(--color-bg);
+    color: var(--color-text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+  .root { width: 100%; max-width: 660px; }
+
+  /* header */
+  .header { display: flex; justify-content: space-between; align-items: baseline;
+            border-bottom: 0.5px solid var(--color-border-md); padding-bottom: 0.75rem; margin-bottom: 1.5rem; }
+  .header-title { font-size: 13px; font-weight: 500; color: var(--color-text-muted);
+                  letter-spacing: 0.08em; text-transform: uppercase; }
+  .header-meta  { font-size: 11px; color: var(--color-text-hint); }
+
+  /* loading / error */
+  .status { font-size: 13px; color: var(--color-text-hint); padding: 2rem 0; text-align: center; }
+  .status.error { color: var(--red); }
+
+  /* score row */
+  .score-row { display: flex; gap: 1rem; margin-bottom: 1.5rem; align-items: stretch; }
+  .score-box  { display: flex; flex-direction: column; align-items: center;
+                background: var(--color-bg-secondary); border-radius: var(--radius-md);
+                padding: 1rem 1.5rem; min-width: 96px;
+                border: 0.5px solid var(--color-border); }
+  .score-num   { font-size: 52px; font-weight: 500; line-height: 1; }
+  .score-label { font-size: 10px; color: var(--color-text-hint); margin-top: 4px; letter-spacing: 0.06em; }
+  .action-box  { flex: 1; background: var(--color-bg-secondary); border-radius: var(--radius-md);
+                 padding: 1rem 1.25rem; border: 0.5px solid var(--color-border); display: flex; flex-direction: column; justify-content: center; }
+  .action-label{ font-size: 10px; color: var(--color-text-hint); letter-spacing: 0.06em; margin-bottom: 6px; }
+  .action-text { font-size: 22px; font-weight: 500; }
+
+  /* position row */
+  .pos-row { display: flex; gap: 10px; margin-bottom: 1.5rem; }
+  .metric  { flex: 1; background: var(--color-bg-secondary); border-radius: var(--radius-md);
+             padding: 0.75rem 1rem; border: 0.5px solid var(--color-border); }
+  .metric-label { font-size: 10px; color: var(--color-text-hint); letter-spacing: 0.06em; margin-bottom: 4px; }
+  .metric-val   { font-size: 18px; font-weight: 500; }
+
+  /* progress bar */
+  .bar-section { margin-bottom: 1.5rem; }
+  .bar-header  { display: flex; justify-content: space-between; font-size: 11px;
+                 color: var(--color-text-hint); margin-bottom: 6px; }
+  .bar-track   { height: 6px; border-radius: 3px; background: var(--color-bg-secondary); }
+  .bar-fill    { height: 100%; border-radius: 3px; transition: width 0.7s ease, background 0.4s ease; }
+  .thresholds  { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .thresh      { font-size: 10px; padding: 2px 8px; border-radius: 3px; }
+
+  /* signals */
+  .signals { margin-bottom: 1.5rem; }
+  .sig-row { display: flex; align-items: center; justify-content: space-between;
+             padding: 10px 0; border-bottom: 0.5px solid var(--color-border); }
+  .sig-row:last-child { border-bottom: none; }
+  .sig-left { display: flex; align-items: center; gap: 10px; }
+  .sig-dot  { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .sig-name { font-size: 13px; }
+  .sig-desc { font-size: 11px; color: var(--color-text-hint); margin-top: 1px; }
+  .sig-val  { font-size: 10px; color: var(--color-text-hint); margin-top: 2px; font-family: var(--mono); }
+  .badge    { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 3px; white-space: nowrap; }
+
+  /* history chart */
+  .chart-section { margin-bottom: 1.5rem; }
+  .chart-label   { font-size: 10px; color: var(--color-text-hint); letter-spacing: 0.06em; margin-bottom: 8px; }
+  .chart-wrap    { position: relative; height: 80px; }
+
+  /* raw data toggle */
+  .raw-toggle { font-size: 11px; color: var(--color-text-hint); cursor: pointer;
+                padding: 6px 0; border-top: 0.5px solid var(--color-border); margin-bottom: 0; }
+  .raw-toggle:hover { color: var(--color-text-muted); }
+  .raw-grid   { display: none; grid-template-columns: 1fr 1fr; gap: 4px 1.5rem;
+                padding: 10px 0; font-size: 11px; }
+  .raw-grid.open { display: grid; }
+  .raw-key   { color: var(--color-text-hint); }
+  .raw-value { color: var(--color-text); font-weight: 500; text-align: right; }
+
+  /* footer */
+  .footer { font-size: 11px; color: var(--color-text-hint);
+            border-top: 0.5px solid var(--color-border); padding-top: 0.75rem; line-height: 1.8; }
+
+  /* color helpers */
+  .c-red   { color: var(--red);   } .c-amber { color: var(--amber); } .c-green { color: var(--green); }
+  .bg-red  { background: var(--red-bg);   color: var(--red-text);   }
+  .bg-amber{ background: var(--amber-bg); color: var(--amber-text); }
+  .bg-green{ background: var(--green-bg); color: var(--green-text); }
+  .dot-red  { background: var(--red);  }
+  .dot-gray { background: var(--gray); }
+</style>
+</head>
+<body>
+<div class="root">
+  <div class="header">
+    <span class="header-title">Exit Signal Engine</span>
+    <span class="header-meta" id="updated-at">—</span>
+  </div>
+
+  <div class="status" id="status">正在加载市场数据...</div>
+
+  <div id="content" style="display:none">
+
+    <div class="score-row">
+      <div class="score-box">
+        <span class="score-num" id="score-num">0</span>
+        <span class="score-label">EXIT SCORE / 5</span>
+      </div>
+      <div class="action-box">
+        <div class="action-label">当前操作建议</div>
+        <div class="action-text" id="action-text">—</div>
+      </div>
+    </div>
+
+    <div class="pos-row">
+      <div class="metric">
+        <div class="metric-label">当前仓位</div>
+        <div class="metric-val" id="pos-current">—</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">建议仓位</div>
+        <div class="metric-val" id="pos-suggest">—</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">仓位调整</div>
+        <div class="metric-val" id="pos-delta">—</div>
+      </div>
+    </div>
+
+    <div class="bar-section">
+      <div class="bar-header">
+        <span>风险评分进度</span>
+        <span id="bar-label">0 / 5</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" id="bar-fill" style="width:0%"></div>
+      </div>
+      <div class="thresholds">
+        <span class="thresh bg-green">0–1 持有</span>
+        <span class="thresh bg-amber">2 减20%</span>
+        <span class="thresh bg-amber">3 减50%</span>
+        <span class="thresh bg-red">4+ 撤退</span>
+      </div>
+    </div>
+
+    <div class="signals" id="signals-container"></div>
+
+    <div class="chart-section">
+      <div class="chart-label">近 30 日 EXIT SCORE 趋势</div>
+      <div class="chart-wrap">
+        <canvas id="hist-chart"></canvas>
+      </div>
+    </div>
+
+    <div class="raw-toggle" onclick="toggleRaw()">▸ 原始数据</div>
+    <div class="raw-grid" id="raw-grid"></div>
+
+  </div>
+
+  <div class="footer">
+    数据来源：Yahoo Finance（约 15 分钟延迟）&nbsp;|&nbsp;
+    逻辑链：矿业股先弱 → 商品内部背离 → 价格下跌
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const SIGNAL_META = {
+  zijin_weakness:   { name: "紫金弱于黄金",    desc: "zijin/gold ratio vs 20日均线" },
+  gdx_weakness:     { name: "GDX 弱于黄金",    desc: "gdx/gold ratio vs 20日均线" },
+  copper_breakdown: { name: "铜金比跌破均线",   desc: "copper/gold ratio vs 20日均线 → 避险模式" },
+  divergence:       { name: "黄金 vs 矿股背离", desc: "黄金创新高但 GDX 未确认 → 顶部结构" },
+  risk_spike:       { name: "VIX 异常",         desc: "VIX > 25 → 市场进入风险状态" },
+};
+
+const RAW_LABELS = {
+  zijin: "紫金 (CNY)", gold: "黄金 (USD)", gdx: "GDX (USD)",
+  copper: "铜 (USD)", vix: "VIX",
+  zijin_gold_ratio: "紫金/黄金 ratio", zijin_gold_ratio_ma20: "紫金/黄金 MA20",
+  gdx_gold_ratio:   "GDX/黄金 ratio",  gdx_gold_ratio_ma20:   "GDX/黄金 MA20",
+  copper_gold_ratio:"铜/黄金 ratio",   copper_gold_ratio_ma20:"铜/黄金 MA20",
+  gold_ma20: "黄金 MA20", gdx_ma20: "GDX MA20",
+};
+
+function scoreColor(score) {
+  if (score >= 4) return getComputedStyle(document.documentElement).getPropertyValue('--red').trim()   || '#E24B4A';
+  if (score >= 2) return getComputedStyle(document.documentElement).getPropertyValue('--amber').trim() || '#BA7517';
+  return getComputedStyle(document.documentElement).getPropertyValue('--green').trim() || '#639922';
+}
+function actionClass(score) {
+  if (score >= 4) return 'c-red';
+  if (score >= 2) return 'c-amber';
+  return 'c-green';
+}
+
+function render(d) {
+  const score = d.score;
+
+  // score
+  document.getElementById('score-num').textContent = score;
+  document.getElementById('score-num').className = 'score-num ' + actionClass(score);
+
+  // action
+  document.getElementById('action-text').textContent = d.action;
+  document.getElementById('action-text').className   = 'action-text ' + actionClass(score);
+
+  // position
+  const delta = d.suggested_position - d.base_position;
+  document.getElementById('pos-current').textContent = d.base_position + '%';
+  document.getElementById('pos-suggest').textContent = d.suggested_position + '%';
+  const deltaEl = document.getElementById('pos-delta');
+  deltaEl.textContent = (delta >= 0 ? '+' : '') + delta + '%';
+  deltaEl.className = 'metric-val ' + (delta < 0 ? 'c-red' : delta > 0 ? 'c-green' : '');
+
+  // bar
+  const pct = Math.min(score / 5 * 100, 100);
+  document.getElementById('bar-fill').style.width      = pct + '%';
+  document.getElementById('bar-fill').style.background = scoreColor(score);
+  document.getElementById('bar-label').textContent     = score + ' / 5';
+
+  // signals
+  const raw = d.raw;
+  const sigHtml = Object.entries(d.signals).map(([key, active]) => {
+    const meta = SIGNAL_META[key];
+    const ratioLines = {
+      zijin_weakness:   `${raw.zijin_gold_ratio.toFixed(5)} vs MA20 ${raw.zijin_gold_ratio_ma20.toFixed(5)}`,
+      gdx_weakness:     `${raw.gdx_gold_ratio.toFixed(5)} vs MA20 ${raw.gdx_gold_ratio_ma20.toFixed(5)}`,
+      copper_breakdown: `${raw.copper_gold_ratio.toFixed(5)} vs MA20 ${raw.copper_gold_ratio_ma20.toFixed(5)}`,
+      divergence:       `黄金 ${raw.gold.toFixed(1)} vs MA20 ${raw.gold_ma20.toFixed(1)} | GDX ${raw.gdx.toFixed(2)} vs MA20 ${raw.gdx_ma20.toFixed(2)}`,
+      risk_spike:       `VIX ${raw.vix.toFixed(2)}`,
+    }[key] || '';
+    return `<div class="sig-row">
+      <div class="sig-left">
+        <div class="sig-dot ${active ? 'dot-red' : 'dot-gray'}"></div>
+        <div>
+          <div class="sig-name">${meta.name}</div>
+          <div class="sig-desc">${meta.desc}</div>
+          <div class="sig-val">${ratioLines}</div>
+        </div>
+      </div>
+      <span class="badge ${active ? 'bg-red' : 'bg-green'}">${active ? '触发' : '正常'}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('signals-container').innerHTML = sigHtml;
+
+  // history chart
+  const hist = d.history || [];
+  const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
+  const lineColor = isDark ? 'rgba(240,239,232,0.7)' : 'rgba(26,26,26,0.6)';
+  const fillColor = isDark ? 'rgba(240,239,232,0.08)' : 'rgba(26,26,26,0.06)';
+  new Chart(document.getElementById('hist-chart'), {
+    type: 'line',
+    data: {
+      labels: hist.map(h => h.date.slice(5)),
+      datasets: [{
+        data: hist.map(h => h.score),
+        borderColor: lineColor,
+        backgroundColor: fillColor,
+        borderWidth: 1.5,
+        pointRadius: 2,
+        fill: true,
+        tension: 0.3,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: {
+        label: ctx => ' score: ' + ctx.parsed.y
+      }}},
+      scales: {
+        x: { ticks: { font: { family: 'Courier New', size: 10 }, color: isDark ? '#6a6965' : '#888780',
+                       maxTicksLimit: 8, maxRotation: 0 }, grid: { display: false } },
+        y: { min: 0, max: 5, ticks: { stepSize: 1, font: { family: 'Courier New', size: 10 },
+                                       color: isDark ? '#6a6965' : '#888780' },
+             grid: { color: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' } }
+      }
+    }
+  });
+
+  // raw data grid
+  const rawHtml = Object.entries(raw).map(([k, v]) => {
+    const label = RAW_LABELS[k] || k;
+    return `<span class="raw-key">${label}</span><span class="raw-value">${typeof v === 'number' ? v : v}</span>`;
+  }).join('');
+  document.getElementById('raw-grid').innerHTML = rawHtml;
+
+  // updated at
+  const dt = new Date(d.updated_at);
+  document.getElementById('updated-at').textContent =
+    dt.toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) + ' UTC';
+}
+
+function toggleRaw() {
+  const el = document.getElementById('raw-grid');
+  const btn = document.querySelector('.raw-toggle');
+  const open = el.classList.toggle('open');
+  btn.textContent = (open ? '▾' : '▸') + ' 原始数据';
+}
+
+// ── 加载数据 ──────────────────────────────────────────────────────────────────
+// signals.json 路径：与 HTML 同目录，或按你的 GitHub Pages 路径调整
+const DATA_URL = './signals.json';
+
+fetch(DATA_URL + '?t=' + Date.now())
+  .then(r => {
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return r.json();
+  })
+  .then(data => {
+    document.getElementById('status').style.display  = 'none';
+    document.getElementById('content').style.display = 'block';
+    render(data);
+  })
+  .catch(err => {
+    const el = document.getElementById('status');
+    el.className = 'status error';
+    el.textContent = '数据加载失败：' + err.message + '（请确认 signals.json 已生成）';
+    console.error(err);
+  });
+</script>
+</body>
+</html>
