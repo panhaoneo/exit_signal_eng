@@ -1,36 +1,32 @@
 {
-  "updated_at": "2026-07-01T23:00:01Z",
+  "updated_at": "2026-07-02T22:55:01Z",
   "score": 2,
   "action": "减仓 20%",
   "base_position": 80,
   "suggested_position": 64,
   "signals": {
     "zijin_weakness": true,
-    "gdx_weakness": true,
-    "copper_breakdown": false,
+    "gdx_weakness": false,
+    "copper_breakdown": true,
     "divergence": false,
     "risk_spike": false
   },
   "raw": {
-    "zijin": 25.11,
-    "gold": 4055.5,
-    "gdx": 75.07,
-    "copper": 6.1605,
-    "vix": 16.59,
-    "zijin_gold_ratio": 0.006192,
-    "gdx_gold_ratio": 0.018511,
-    "copper_gold_ratio": 0.001519,
-    "zijin_gold_ratio_ma20": 0.006657,
-    "gdx_gold_ratio_ma20": 0.018919,
+    "zijin": 26.3,
+    "gold": 4135.9,
+    "gdx": 78.43,
+    "copper": 6.1755,
+    "vix": 16.15,
+    "zijin_gold_ratio": 0.006359,
+    "gdx_gold_ratio": 0.018963,
+    "copper_gold_ratio": 0.001493,
+    "zijin_gold_ratio_ma20": 0.006626,
+    "gdx_gold_ratio_ma20": 0.018907,
     "copper_gold_ratio_ma20": 0.001498,
-    "gold_ma20": 4200.64,
-    "gdx_ma20": 79.5
+    "gold_ma20": 4186.24,
+    "gdx_ma20": 79.17
   },
   "history": [
-    {
-      "date": "2026-05-20",
-      "score": 2
-    },
     {
       "date": "2026-05-21",
       "score": 2
@@ -145,6 +141,10 @@
     },
     {
       "date": "2026-07-01",
+      "score": 2
+    },
+    {
+      "date": "2026-07-02",
       "score": 2
     }
   ]
