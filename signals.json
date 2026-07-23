@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-07-22T22:51:37Z",
+  "updated_at": "2026-07-23T22:44:36Z",
   "score": 0,
   "action": "正常持有",
   "base_position": 80,
@@ -12,25 +12,21 @@
     "risk_spike": false
   },
   "raw": {
-    "zijin": 32.2,
-    "gold": 4123.5,
-    "gdx": 76.68,
-    "copper": 6.4755,
-    "vix": 16.64,
-    "zijin_gold_ratio": 0.007809,
-    "gdx_gold_ratio": 0.018596,
-    "copper_gold_ratio": 0.00157,
-    "zijin_gold_ratio_ma20": 0.00681,
-    "gdx_gold_ratio_ma20": 0.018455,
-    "copper_gold_ratio_ma20": 0.001529,
-    "gold_ma20": 4067.97,
-    "gdx_ma20": 75.08
+    "zijin": 33.06,
+    "gold": 4052.1,
+    "gdx": 75.02,
+    "copper": 6.334,
+    "vix": 18.7,
+    "zijin_gold_ratio": 0.008159,
+    "gdx_gold_ratio": 0.018514,
+    "copper_gold_ratio": 0.001563,
+    "zijin_gold_ratio_ma20": 0.006899,
+    "gdx_gold_ratio_ma20": 0.018436,
+    "copper_gold_ratio_ma20": 0.001531,
+    "gold_ma20": 4070.22,
+    "gdx_ma20": 75.05
   },
   "history": [
-    {
-      "date": "2026-06-10",
-      "score": 2
-    },
     {
       "date": "2026-06-11",
       "score": 1
@@ -145,6 +141,10 @@
     },
     {
       "date": "2026-07-22",
+      "score": 0
+    },
+    {
+      "date": "2026-07-23",
       "score": 0
     }
   ]
